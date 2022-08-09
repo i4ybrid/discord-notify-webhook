@@ -1,6 +1,6 @@
 # Discord Notify Webhook
 
-This is a tool that will work in conjunction with Chrome on Linux variants that use dbus to push desktop notifications.
+This is a tool that will work in conjunction with Chrome on Linux variants that use dbus to push the desktop notifications from Chrome's Discord onto a webhook in Discord. This way you won't miss any more notifications; or at least have a log of them.
 
 ## Installation
 
@@ -19,7 +19,7 @@ First of all, this only works on Linux variants that use dbus, and on Google Chr
 * Copy the .env_sample to .env locally, and fill in your webhook. The Discord token is not needed right now, but possibly in a future release, this will be needed for extra features.
 * Run npm install on the root directory. This was tested with node version 14.17.0, so if there are compatibility issues, you can revert to that version.
 * Open Chrome, log into Discord, and turn on your desktop notifications in the settings. Make sure you can get a desktop notification.
-* Run node sendWebhookOnNotify.js. Optionally you can spit the console out into a log useing `sendWebhookOnNotify.js > webhookNotify.log`
+* Run node `sendWebhookOnNotify.js`. Optionally you can spit the console out into a log useing `sendWebhookOnNotify.js > webhookNotify.log`
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
