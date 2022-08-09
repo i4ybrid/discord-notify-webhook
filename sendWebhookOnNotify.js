@@ -89,10 +89,10 @@ function getSenderInfoFromString(senderLine) {
 
 function sendWebhook(payload) {
   //Not using destructuring to allow nulls
-  const senderName = payload.senderName || '.';
-  const channelName = payload.channelName || '.';
-  const categoryName = payload.categoryName || '.';
-  const message = payload.message || '.';
+  const senderName = payload.senderName;
+  const channelName = payload.channelName;
+  const categoryName = payload.categoryName;
+  const message = payload.message;
   let channelHyperlink;
 
   if (global.channelMap?.[categoryName]?.[channelName]) {
@@ -106,10 +106,10 @@ function sendWebhook(payload) {
 
   const embed = new MessageBuilder()
     .setAuthor('Personal Notification Monitor')
-    .addField('Sender', senderName, true)
-    .addField('Channel', channelHyperlink || channelName, true)
-    .addField('Category', categoryName, true)
-    .addField('Message', message)
+    .addField('Sender', senderName || '.', true)
+    .addField('Channel', channelHyperlink ? channelHyperlink : (channelName || '.'), true)
+    .addField('Category', categoryName || '.', true)
+    .addField('Message', message || '.')
     .setTimestamp();
   hook.send(embed)
     .catch((err) => {
