@@ -25,7 +25,16 @@ function processString(inputString) {
     if (lines.length > 5) {
       const isMethodCall = lines[0].startsWith('method call');
       const isChromeNotification = lines[1].includes('"Google Chrome"');
-      const isDiscordMessage = lines[5].includes('"discord.com');;
+      let isDiscordMessage = lines[5].includes('"discord.com');
+      if (isMethodCall && isChromeNotification && !isDiscordMessage) {
+        for (const line of lines) {
+          if (line.includes('string "discord.com"')) {
+            isDiscordMessage = true;
+            //console.log("Found it's a discord message!");
+            break;
+          }
+        }
+      }
       //console.log(`Received Discord Message? {${isMethodCall}, ${isChromeNotification}, ${isDiscordMessage}} from ${lines[4]}`);
 
       if (isMethodCall && isChromeNotification && isDiscordMessage) {
