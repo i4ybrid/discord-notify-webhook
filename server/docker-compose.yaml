@@ -1,0 +1,8 @@
+version: '3'
+services:
+  app:
+    build: .
+    volumes:
+      - .:/home/discord-notify-webhook
+    command: >
+      sh -c "node index.js && node runPuppeteer.js"

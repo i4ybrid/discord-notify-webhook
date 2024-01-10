@@ -1,0 +1,20 @@
+{
+  "User#1234": {
+      "name": "User",
+      "discriminator": "#1234",
+      "roles": [
+          "Staff",
+          "Private"
+      ],
+      "imageUrl": "https://cdn.discordapp.com/avatars/283723232323/12877361231223123123.webp"
+  },
+  "User#5988": {
+      "name": "User",
+      "discriminator": "#5988",
+      "roles": [
+          "Admin",
+          "Member"
+      ],
+      "imageUrl": "https://cdn.discordapp.com/guilds/3432432432/users/324234324324/avatars/324234234324.webp"
+  }
+}

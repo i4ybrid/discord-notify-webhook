@@ -1,0 +1,10 @@
+--Docker
+
+I want to make a docker image that I can launch onto amazon web services or a server running docker. It should be able to create multiple instances on one server, and each instance will have a unique .env file that will help configure the application.
+It should install an extremely lightweight instance of linux that has a LXQt UI. 
+It will install Microsoft Edge, Node.js v20, and then clone or pull https://github.com/i4ybrid/discord-notify-webhook.git to the home directory
+Then it will run npm install within the ~/discord-notify-webhook/ directory if there is no ~/discord-notify-webhook/node_modules folder
+It will run one instance of node ~/discord-notify-webhook/index.js
+It will also run one instance of node ~/discord-notify-webhook/runPuppeteer.js
+
+Please help me build this dockercompose file

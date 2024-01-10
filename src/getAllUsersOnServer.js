@@ -1,6 +1,6 @@
 const { Webhook, MessageBuilder } = require('discord-webhook-node');
 const fs = require('fs');
-const users = require('./users.json');
+const users = require('../config/users.json');
 
 const webhookUrl = 'https://discord.com/api/webhooks/1004377191821361203/LnKmCWtwDHD4rCuYfPvfhUUDz9f3nbzAAc2S_FallgWwLxkUEJc_Ak448cILauK0ZtTa'
 const hook = new Webhook(webhookUrl);
