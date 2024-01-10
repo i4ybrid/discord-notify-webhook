@@ -130,4 +130,4 @@ dist
 .pnp.*
 
 # custom for project
-./config/priorityGuilds.txt
+config/priorityGuilds.txt
