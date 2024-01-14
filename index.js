@@ -30,15 +30,15 @@ function processString(inputString) {
         for (const line of lines) {
           if (line.includes('string "discord.com"')) {
             isDiscordMessage = true;
-            //console.log("Found it's a discord message!");
+            //global.logger.log('debug', "Found it's a discord message!");
             break;
           }
         }
       }
-      //console.log(`Received Discord Message? {${isMethodCall}, ${isChromeNotification}, ${isDiscordMessage}} from ${lines[4]}`);
+      //global.logger.log('debug', `Received Discord Message? {${isMethodCall}, ${isChromeNotification}, ${isDiscordMessage}} from ${lines[4]}`);
 
       if (isMethodCall && isChromeNotification && isDiscordMessage) {
-        console.log(`Received Discord Message from ${lines[0]}`);
+        global.logger.log('debug', `Received Discord Message from ${lines[0]}`);
         const resultData = getSenderInfoFromString(lines[4]);
         const messageData = parseMessages(lines, 6);
         if (resultData) {
@@ -47,7 +47,7 @@ function processString(inputString) {
       }
     }
   }
-  //console.log(`Received ${inputString}`);
+  //global.logger.log('debug', `Received ${inputString}`);
 }
 
 /**
@@ -135,7 +135,7 @@ function sendWebhook(payload) {
   if (channelUrlSuffix) {
     channelHyperlink = `[${channelName}](https://discord.com/channels/${channelUrlSuffix})`;
   } else {
-    console.log(`Couldn't find the channel for [${categoryName} | ${channelName}]`);
+    global.logger.log('error', `Couldn't find the channel for [${categoryName} | ${channelName}]`);
   }
 
   const embed = new MessageBuilder()
@@ -226,11 +226,11 @@ async function loadChannelMap(discordToken) {
       const textNameMap = await new Map(fetchedTextChannels.map((channel) => {
         const categoryName = categoryNameMap.get(channel.parent_id) || '';
         channelToId[`${categoryName} | #${channel.name}`] = `${guildInfo.id}/${channel.id}`;
-        //console.log(`${categoryName} | #${channel.name} = ${guildInfo.id}/${channel.id}`);
+        //global.logger.log('debug', `${categoryName} | #${channel.name} = ${guildInfo.id}/${channel.id}`);
         return [`${categoryName} | #${channel.name}`, `${guildInfo.id}/${channel.id}`];
       }));
 
-      console.log(`loadChannelMap Processed [${guildInfo.name}] /${guildInfo.id}; Fetched ${fetchedCategories.length} categories and ${fetchedTextChannels.length} text channels. Processed ${textNameMap.size} text channels`);
+      global.logger.log('info', `loadChannelMap Processed [${guildInfo.name}] /${guildInfo.id}; Fetched ${fetchedCategories.length} categories and ${fetchedTextChannels.length} text channels. Processed ${textNameMap.size} text channels`);
 
       await sleep(5000);
     });
