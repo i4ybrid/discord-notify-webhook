@@ -1,18 +1,15 @@
 const { Webhook, MessageBuilder } = require('discord-webhook-node');
 const { spawn } = require('child_process');
+const { initialize } = require('./src/initialize');
 const fetch = require('node-fetch');
 const fs = require('fs');
+const { sendWebhook } = require('./src/webhookManager');
 require('dotenv').config();
 
 let hook;
 
 const dupePrevention = new Set();
-const channelToId = {}; //map of { `${categoryName} | #${channelName}` : `${guildId}/${channelId}` }
-const priorityGuilds = new Set();
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
+global.channelToId = {}; //map of { `${categoryName} | #${channelName}` : `${guildId}/${channelId}` }
 
 /**
  * Will process message, returns null if filtered or an error happens
@@ -117,124 +114,6 @@ function checkUnique(payload) {
   } else {
     return false;
   }
-}
-
-function sendWebhook(payload) {
-  if (!checkUnique(payload)) {
-    return;
-  }
-
-  //Not using destructuring to allow nulls
-  const senderName = payload.senderName;
-  const channelName = payload.channelName;
-  const categoryName = payload.categoryName;
-  const message = payload.message;
-  const channelUrlSuffix = channelToId[`${categoryName} | ${channelName}`];
-  let channelHyperlink;
-
-  if (channelUrlSuffix) {
-    channelHyperlink = `[${channelName}](https://discord.com/channels/${channelUrlSuffix})`;
-  } else {
-    global.logger.log('error', `Couldn't find the channel for [${categoryName} | ${channelName}]`);
-  }
-
-  const embed = new MessageBuilder()
-    .setAuthor('Personal Notification Monitor')
-    .addField('Sender', senderName || '.', true)
-    .addField('Channel', channelHyperlink ? channelHyperlink : (channelName || '.'), true)
-    .addField('Category', categoryName || '.', true)
-    .addField('Message', message || '.')
-    .setTimestamp();
-  hook.send(embed)
-    .catch((err) => {
-      console.error(err.stack);
-    });
-}
-
-function initialize() {
-  try {
-    const priorityGuildsText = fs.readFileSync('./config/priorityGuilds.txt', 'utf8');
-    const priorityGuildArray = priorityGuildsText.split(/(\r\n)+/g);
-    priorityGuildArray.forEach((priorityGuild) => {
-      priorityGuilds.add(priorityGuild);
-    });
-  } catch (e) {
-    //no-op
-  }
-
-  const webhookUrl = process.env.NOTIFICATION_WEBHOOK;
-  if (!webhookUrl) {
-    console.error('You need to set a discord webhook in an .env file. Use .env_sample as an example of what to do, just put your webhook after the NOTIFICATION_WEBHOOK=');
-    process.exit(1);
-  }
-  hook = new Webhook(webhookUrl);
-
-  const discordToken = process.env.DISCORD_TOKEN;
-  if (discordToken) {
-    loadChannelMap(discordToken);
-  }
-}
-
-function guildSorter(a, b) {
-  if (priorityGuilds.has(a.id) || priorityGuilds.has(a.name)) {
-    return -1;
-  } else if (priorityGuilds.has(b.id) || priorityGuilds.has(b.name)) {
-    return 1;
-  } else {
-    return 0;
-  }
-}
-
-/**
- * Fetches all channel data periodically (rate limited), and then put it into the channelToId map.
- * Tuples in object are: [ `${categoryName} | #${channelName}`, `${guildId}/${channelId}` ]
- * 
- * @param {string} discordToken
- */
-async function loadChannelMap(discordToken) {
-  const headers = {
-    'Content-Type': 'application/json',
-    Authorization: discordToken,
-  };
-
-  const allGuilds = await fetch('https://discord.com/api/v10/users/@me/guilds', {
-    method: 'GET',
-    headers
-  }).then((res) => res.json())
-    .then((json) => json) || [];
-
-  const sortedGuilds = allGuilds.sort(guildSorter);
-  
-  const guildFetchPromise = sortedGuilds.reduce((promiseAccumulator, guildInfo) => {
-    return promiseAccumulator.then(async () => {
-      const fetchedChannels = await fetch(`https://discord.com/api/v10/guilds/${guildInfo.id}/channels`, {
-        method: 'GET',
-        headers
-      }).then((res) => res.json())
-        .then((json) => json);
-
-      const fetchedCategories = await fetchedChannels.filter((guildInfo) => {
-        return 4 === guildInfo?.type;
-      });
-      const fetchedTextChannels = await fetchedChannels.filter((guildInfo) => {
-        return  0 === guildInfo?.type;
-      });
-
-      const categoryNameMap = await new Map(fetchedCategories.map((category) => {
-        return [category.id, category.name];
-      }));
-      const textNameMap = await new Map(fetchedTextChannels.map((channel) => {
-        const categoryName = categoryNameMap.get(channel.parent_id) || '';
-        channelToId[`${categoryName} | #${channel.name}`] = `${guildInfo.id}/${channel.id}`;
-        //global.logger.log('debug', `${categoryName} | #${channel.name} = ${guildInfo.id}/${channel.id}`);
-        return [`${categoryName} | #${channel.name}`, `${guildInfo.id}/${channel.id}`];
-      }));
-
-      global.logger.log('info', `loadChannelMap Processed [${guildInfo.name}] /${guildInfo.id}; Fetched ${fetchedCategories.length} categories and ${fetchedTextChannels.length} text channels. Processed ${textNameMap.size} text channels`);
-
-      await sleep(5000);
-    });
-  }, Promise.resolve());
 }
 
 (async () => {
